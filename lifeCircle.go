@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
+	log "github.com/sirupsen/logrus"
 	"time"
 )
 
-func (philo *Philo) lifecircle(ctx context.Context) {
+func (philo *Philo) lifeСircle(ctx context.Context) {
 	if philo.Id%2 == 1 {
 		time.Sleep(5 * time.Millisecond)
 	}
@@ -14,19 +16,19 @@ func (philo *Philo) lifecircle(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
+			philo.eating()
+			philo.sleeping()
+			philo.thinking()
 		}
-		philo.eating()
-		philo.sleeping()
-		philo.thinking()
 	}
 }
 
 func (philo *Philo) eating() {
 	philo.LeftFork <- struct{}{}
-	logger.Info("Take left fork...")
+	log.Info(fmt.Sprintf("Philo %d take left fork...", philo.Id))
 	philo.RightFork <- struct{}{}
-	logger.Info("Take right fork...")
-	logger.Info("Eating...")
+	log.Info(fmt.Sprintf("Philo %d take right fork...", philo.Id))
+	log.Info(fmt.Sprintf("Philo %d is eating...", philo.Id))
 	time.Sleep(philo.Info.TimeToEat)
 	philo.LastEating = time.Now()
 	philo.MealCount--
@@ -35,10 +37,10 @@ func (philo *Philo) eating() {
 }
 
 func (philo *Philo) sleeping() {
-	logger.Info("Sleaping...")
+	log.Info(fmt.Sprintf("Philo %d is sleeping...", philo.Id))
 	time.Sleep(philo.Info.TimeToSleep)
 }
 
 func (philo *Philo) thinking() {
-	logger.Info("Thinking...")
+	log.Info(fmt.Sprintf("Philo %d is thinking...", philo.Id))
 }

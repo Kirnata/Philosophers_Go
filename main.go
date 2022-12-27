@@ -2,26 +2,26 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"time"
 )
 
-func NewInfo() *Info {
+func newInfo() *Info {
 	return &Info{}
 }
 
-func Pukinit(inf *Info) {
-	flag.IntVar(&inf.NumOfPhilos, "philosophers", 10, "The integer param")
-	flag.DurationVar(&inf.TimeToDie, "die", time.Millisecond*200, "The duration param")
-	flag.DurationVar(&inf.TimeToEat, "eat", time.Millisecond*50, "The duration param")
-	flag.DurationVar(&inf.TimeToSleep, "sleep", time.Millisecond*50, "The duration param")
-	flag.IntVar(&inf.NumOfMeals, "meals", 10, "The integer param")
+func (info *Info) init() {
+	flag.IntVar(&info.NumOfPhilos, "philosophers", 10, "The integer param")
+	flag.DurationVar(&info.TimeToDie, "die", time.Millisecond*200, "The duration param")
+	flag.DurationVar(&info.TimeToEat, "eat", time.Millisecond*50, "The duration param")
+	flag.DurationVar(&info.TimeToSleep, "sleep", time.Millisecond*50, "The duration param")
+	flag.IntVar(&info.NumOfMeals, "meals", 10, "The integer param")
 	flag.Parse()
 }
 
 func main() {
-	myInfo := NewInfo()
-	Pukinit(myInfo)
-	fmt.Println(myInfo)
+	myInfo := newInfo()
+	myInfo.init()
+	//fmt.Println(myInfo)
+	//return
 	philosophers(myInfo)
 }

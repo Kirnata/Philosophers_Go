@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"sync"
 	"time"
@@ -18,9 +19,7 @@ func checker(philos []*Philo, endCh chan bool) {
 			}
 			mu.Unlock()
 			if time.Now().Sub(deadline) > 0 {
-				log.Info("DEAD OF PHILO")
-				log.Info("DEAD OF PHILO")
-				time.Sleep(5 * time.Second)
+				log.Info(fmt.Sprintf("%d is DEAD", philos[i].Id))
 				close(endCh)
 				return
 			}
