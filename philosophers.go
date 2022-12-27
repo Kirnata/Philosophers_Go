@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	log "github.com/sirupsen/logrus"
 	"sync"
 	"time"
@@ -8,12 +9,18 @@ import (
 
 var logger = log.New()
 
-func CreateForks(info *Info) []Fork {
+func createForks(info *Info) []Fork {
 	forks := make([]Fork, info.NumOfPhilos)
 	for i := 0; i < info.NumOfPhilos; i++ {
-		forks[i] = make(Fork)
+		forks[i] = make(Fork, 1)
 	}
 	return forks
+}
+
+func closeForks(forks []Fork) {
+	for _, v := range forks {
+		close(v)
+	}
 }
 
 func Start(philos []*Philo, forks []Fork, info *Info) {
@@ -21,43 +28,36 @@ func Start(philos []*Philo, forks []Fork, info *Info) {
 	wg.Add(info.NumOfPhilos)
 	logger.Info("Starting ...")
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	for i := range philos {
 		philos[i] = &Philo{
-			Id:        i + 1,
-			MealCount: info.NumOfMeals,
-			RightFork: forks[(i+1)%info.NumOfPhilos],
-			LeftFork:  forks[i%info.NumOfPhilos],
-			Info:      info,
+			Id:         i + 1,
+			MealCount:  info.NumOfMeals,
+			RightFork:  forks[(i+1)%info.NumOfPhilos],
+			LeftFork:   forks[i%info.NumOfPhilos],
+			Info:       info,
+			LastEating: time.Now(),
 		}
 		i := i
 		go func() {
 			defer wg.Done()
-			Lifecircle(philos[i])
+			philos[i].lifecircle(ctx)
 		}()
 	}
-
+	endCh := make(chan bool)
+	go checker(philos, endCh)
+	for range endCh {
+		<-endCh
+	}
+	cancel()
 	wg.Wait()
 }
 
-func Lifecircle(philo *Philo) {
-	if philo.Id%2 == 1 {
-		time.Sleep(5 * time.Millisecond)
-	}
-	for philo.MealCount > 0 {
-		logger.Info("Eating...")
-		time.Sleep(philo.Info.TimeToEat)
-		logger.Info("Sleaping...")
-		time.Sleep(philo.Info.TimeToSleep)
-		logger.Info("Thinking...")
-		logger.Info("Thinking...")
-		philo.MealCount--
-	}
-}
-
 func philosophers(info *Info) {
-	forks := CreateForks(info)
+	forks := createForks(info)
 	philos := make([]*Philo, info.NumOfPhilos)
-	//makeForks(forks)
 	Start(philos, forks, info)
+	closeForks(forks)
 	logger.Info("😎 ENDING SIMULATION 😎")
 }
